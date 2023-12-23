@@ -5,135 +5,124 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mzeouaou <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/16 11:40:29 by mzeouaou          #+#    #+#             */
-/*   Updated: 2023/12/16 11:40:32 by mzeouaou         ###   ########.fr       */
+/*   Created: 2023/12/21 15:05:39 by mzeouaou          #+#    #+#             */
+/*   Updated: 2023/12/21 15:05:41 by mzeouaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-size_t	count_c(const char *str)
+char *redlang_line(char *str, int fd)
 {
-	int	i;
+    char    *buffer;
+    int nmbre_byte;
 
-	i = 0;
-	while (str[i] != '\n')
-	{
-		i++;
-	}
-    i++;
-	return (i);
+    if (!str)
+    {
+        str = malloc(1);
+        if (!str)
+            return(NULL);
+    }
+    buffer = malloc(BUFFER_SIZE + 1);
+    nmbre_byte = 1;
+    while (nmbre_byte > 0 && !ft_strchr(str,'\n'))
+    {
+        nmbre_byte = read(fd, buffer, BUFFER_SIZE);
+        if(nmbre_byte < 0)
+            return(free(buffer), free(str), NULL);
+        buffer[nmbre_byte] = '\0';
+        str = ft_strjoin(str, buffer);
+    }
+    return(free(buffer), str);
 }
 
-int cheker(char *readbuf)
+char *correcte_line(char    *str)
 {
     int i;
+    char    *line;
 
     i = 0;
-    while (readbuf[i] != '\0')
+    while (str[i] && str[i] != '\n')
+        i++;
+    if (str[i] == '\n')
+        i++;
+    line = malloc(i + 1);
+    if (!line)
+        return(NULL);
+    i=0;
+    while (str[i] && str[i] != '\n')
     {
-        if (readbuf[i] == '\n')
-            return(1);
+        line[i] = str[i];
         i++;
     }
-    return(0);
+    if (str[i] == '\n')
+    {
+        line[i] = str[i];
+        i++;
+    }
+    line[i] = '\0';
+    return(line);
 }
 
-char    *rest(char *readbuf)
+char    *rest_line(char *str, char  *line)
 {
+    char    *rest;
     int i;
     int j;
-    char *str = malloc(BUFFER_SIZE + 1); /*********************/
-    j = 0;
-    i = 0;
-    while (readbuf[i] != '\0')
-    {
-        if (readbuf[i] == '\n')
-        {
-            i++;
-            while (readbuf[i] != '\0')
-            {
-                str[j] = readbuf[i];
-                i++;
-                j++;
-            }
-            continue;
-        }
-        i++;
-    }
-    str[j] = '\0';
-    return(str);
-}
 
-char *ft_return(char *line)
-{
-    if (ft_strlen(line) > 0)
-        return (line);
-    else
-        return (free(line), NULL);
+    i = 0;
+    j = 0;
+    rest = malloc(ft_strlen(str) - ft_strlen(line) + 1);
+    if(!rest)
+        return(free(str),NULL);
+    while (str[i] && str[i] != '\n')
+        i++;
+    if(str[i] == '\n')
+    {
+        i++;
+        while (str[i])
+        {
+            rest[j] = str[i];
+            i++;
+            j++;
+        }
+    }
+    rest[j] = '\0';
+    return(free(str), rest);
 }
 
 char *get_next_line(int fd)
 {
-    if (fd < 0)
-        return(NULL);
-    char readbuf[BUFFER_SIZE + 1];
+    static char *str;
     char *line;
-    static char *resetstr;
-    int readed;
-    int i;
-    char    c;
-    // static int k;
-    i = 0;
-    //printf("__________________%d__________________\n", k++);
-    line = malloc(1); /************************/
-    line[0] = '\0';
-    c = 0;
-    if (resetstr != NULL)
-    {
-        line = ft_strjoin(line, resetstr);
-        // printf("line with rest: \"%s\"\n", line);
-        free(resetstr);
-        resetstr = NULL;
-    }
-    while (c != 2)
-    {
-        i = 0;
-        readed = read(fd, readbuf, BUFFER_SIZE);
-        // printf("readed: \"%d\"\n", readed);
-        if (readed == 0)
-            return (ft_return(line));
-        readbuf[readed] = '\0';
-        // printf("readbuf: \"%s\"\n", readbuf);
-        line = ft_strjoin(line, readbuf);
-        // printf("line in gnl: \"%s\"\n", line);
-        c = cheker(readbuf);
-        if (c == 1)
-        {
-            resetstr = rest(readbuf);
-            // printf("resetstr: \"%s\"\n", resetstr);
-        }
-        c++;
-    }
-    i = 0;
-    i = count_c(line);
-    return(ft_substr(line, 0, i));
+
+    str = redlang_line(str, fd);
+    if (!str)
+        return(NULL);
+    line = correcte_line(str);
+    str = rest_line(str, line);
+    if (!str)
+        return(free(line), NULL);
+    return(line);
 }
 
+// #include <stdio.h>
+// #include <fcntl.h>
 // int main()
 // {
 //     char *str;
 //     int a = open("file.txt", O_RDONLY);
-//     while (1)
-//     {
-//         str = get_next_line(a);
-//         printf("line: \"%s\"\n", str);
-//         free(str);
-//         if (!str)
-//             break;
-//     }
+//     // while (1)
+//     // {
+//     //     str = get_next_line(a);
+//     //     printf("line: \"%s\"\n", str);
+//     //     free(str);
+//     //     if (!str)
+//     //         break;
+//     // }
 //     str = get_next_line(a);
 //     printf("line: \"%s\"\n", str);
 //     free(str);
 //     return 0;
 // }
+
