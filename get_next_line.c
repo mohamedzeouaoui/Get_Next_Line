@@ -20,16 +20,29 @@ char *redlang_line(char *str, int fd)
     if (!str)
     {
         str = malloc(1);
+        str[0] = '\0';
         if (!str)
             return(NULL);
     }
     buffer = malloc(BUFFER_SIZE + 1);
+    if (!buffer)
+        return (free(str), NULL);
     nmbre_byte = 1;
     while (nmbre_byte > 0 && !ft_strchr(str,'\n'))
     {
         nmbre_byte = read(fd, buffer, BUFFER_SIZE);
-        if(nmbre_byte < 0)
-            return(free(buffer), free(str), NULL);
+        if(nmbre_byte <= 0)
+        {
+            if (nmbre_byte == -1)
+                return (free(buffer), free(str), NULL);
+            else
+            {
+                if (ft_strlen(str) > 0)
+                    return (free(buffer), str);
+                else
+                    return (free(buffer), free(str), NULL);
+            }
+        }
         buffer[nmbre_byte] = '\0';
         str = ft_strjoin(str, buffer);
     }
@@ -96,6 +109,8 @@ char *get_next_line(int fd)
     static char *str;
     char *line;
 
+    if (fd < 0 || BUFFER_SIZE <= 0)
+        return (NULL);
     str = redlang_line(str, fd);
     if (!str)
         return(NULL);
@@ -112,14 +127,14 @@ char *get_next_line(int fd)
 // {
 //     char *str;
 //     int a = open("file.txt", O_RDONLY);
-//     // while (1)
-//     // {
-//     //     str = get_next_line(a);
-//     //     printf("line: \"%s\"\n", str);
-//     //     free(str);
-//     //     if (!str)
-//     //         break;
-//     // }
+//     while (1)
+//     {
+//         str = get_next_line(a);
+//         printf("line: \"%s\"\n", str);
+//         free(str);
+//         if (!str)
+//             break;
+//     }
 //     str = get_next_line(a);
 //     printf("line: \"%s\"\n", str);
 //     free(str);

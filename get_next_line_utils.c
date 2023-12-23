@@ -51,17 +51,21 @@ char	*ft_strjoin(char *s1, char *s2)
 	return (free(s1), s3);
 }
 
-char	*ft_strchr(const char *s, int c)
+char	*ft_strchr(char *s, int c)
 {
-	while (*s != '\0')
+	int i = 0;
+	
+	if (s == NULL)
+		return (NULL);
+	if (s[i] == '\0')
+		return (NULL);
+	while (s[i] != '\0')
 	{
-		if (*s == (char)c)
-		{
-			return ((char *)s);
-		}
-		s++;
+		if (s[i] == (char)c)
+			return ((char *)s + i);
+		i++;
 	}
 	if ((char)c == '\0')
-		return ((char *)s);
+		return ((char *)s + i);
 	return (NULL);
 }
