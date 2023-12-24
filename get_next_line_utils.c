@@ -30,8 +30,7 @@ char	*ft_strjoin(char *s1, char *s2)
 	int		i;
 	int		j;
 
-
-	s3 = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1)); /*************/
+	s3 = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
 	if (!s3)
 		return (NULL);
 	i = 0;
@@ -53,8 +52,9 @@ char	*ft_strjoin(char *s1, char *s2)
 
 char	*ft_strchr(char *s, int c)
 {
-	int i = 0;
-	
+	int	i;
+
+	i = 0;
 	if (s == NULL)
 		return (NULL);
 	if (s[i] == '\0')
